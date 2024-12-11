@@ -1,9 +1,8 @@
 import socket
 
 # Define server details
-HOST = 'localhost'  
-PORT = 9090  
-
+HOST = 'localhost'
+PORT = 9090
 
 def main():
     # Create a TCP socket
@@ -30,6 +29,7 @@ def main():
         # Exit the client
         if query.lower() == "exit":
             print("Closing the client.")
+            client_socket.send(query.encode())
             break
 
         # Validate user input
@@ -50,7 +50,6 @@ def main():
 
     # Close the socket
     client_socket.close()
-
 
 if __name__ == "__main__":
     main()
