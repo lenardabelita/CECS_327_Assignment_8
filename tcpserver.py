@@ -13,8 +13,8 @@ db = client[MONGO_DB_NAME]
 
 # Query 1: Average moisture in the fridge
 def calculate_query_1():
-    virtual = db["sensor_data"]  # Replace with your collection name
-    metadata = db["device_metadata"]  # Replace with your collection name
+    virtual = db["sensor_data"]  
+    metadata = db["device_metadata"]  
 
     three_hours_ago = datetime.now(tz=timezone.utc) - timedelta(hours=3)
     three_hours_ago_unix = int(three_hours_ago.timestamp())
