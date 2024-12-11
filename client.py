@@ -1,39 +1,55 @@
 import socket
 
-def get_server_info():
-    while True:
-        #Get user input, IP and Port
-        server_ip = input("Enter the server IP address: ")
-        server_port = input("Enter the server port number: ")
-
-        if not server_port.isdigit():
-            print("Port number should be a positive integer.")
-            continue
-
-        return server_ip, int(server_port)
+# Define server details
+HOST = 'localhost'
+PORT = 9090
 
 def main():
-    # Get server IP and port from user
-    server_ip, server_port = get_server_info()
+    # Create a TCP socket
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        # Connect to the server
+        client_socket.connect((HOST, PORT))
+        print(f"Connected to server at {HOST}:{PORT}\n")
+    except Exception as e:
+        print(f"Error connecting to server: {e}")
+        return
 
     while True:
-        #Prompt user to enter a message to send to desired server
-        message = input("Enter a message to send to the server (type 'quit' to exit): ")
-        if message.lower() == 'quit':
+        # Display menu options to the user
+        print("Select a query:")
+        print("1: Average moisture inside the fridge in the last 3 hours")
+        print("2: Average water consumption per dishwasher cycle")
+        print("3: Device with the highest electricity consumption")
+        print("Type 'exit' to close the client\n")
+
+        query = input("Enter your choice (1, 2, 3, or exit): ")
+
+        # Exit the client
+        if query.lower() == "exit":
+            print("Closing the client.")
+            client_socket.send(query.encode())
             break
 
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-                #Connect to server
-                server_socket.connect((server_ip, server_port))
-                #Send message to server
-                server_socket.sendall(message.encode())
+        # Validate user input
+        if query not in ["1", "2", "3"]:
+            print("Invalid input. Please enter 1, 2, 3, or exit.")
+            continue
 
-                #Receive the message from the server
-                data = server_socket.recv(1024)
-                print("Server reply:", data.decode())
+        try:
+            # Send query to server
+            client_socket.send(query.encode())
+
+            # Receive and display the server's response
+            response = client_socket.recv(1024).decode()
+            print(f"Response from server: {response}\n")
         except Exception as e:
-            print("Error:", e)
+            print(f"Error during communication: {e}")
+            break
+
+    # Close the socket
+    client_socket.close()
 
 if __name__ == "__main__":
     main()
