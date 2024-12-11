@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 import socket
-import os
 
 # MongoDB Configuration
 MONGO_URI = "mongodb+srv://lenardjirehabelita01:Pt2Tqz354cyhO8Ow@cluster0.kjj3i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -13,8 +12,8 @@ db = client[MONGO_DB_NAME]
 
 # Query 1: Average moisture in the fridge
 def calculate_query_1():
-    virtual = db["sensor_data"]  
-    metadata = db["device_metadata"]  
+    virtual = db["sensor_data"]
+    metadata = db["device_metadata"]
 
     three_hours_ago = datetime.now(tz=timezone.utc) - timedelta(hours=3)
     three_hours_ago_unix = int(three_hours_ago.timestamp())
@@ -110,18 +109,28 @@ def tcp_server(host, port):
         client_socket, client_address = server_socket.accept()
         print(f"Client connected: {client_address}")
 
-        query = int(client_socket.recv(1024).decode())
-        if query == 1:
-            response = calculate_query_1()
-        elif query == 2:
-            response = calculate_query_2()
-        elif query == 3:
-            response = calculate_query_3()
-        else:
-            response = "Invalid query. Use 1, 2, or 3."
+        try:
+            while True:
+                query = client_socket.recv(1024).decode()
+                if not query or query.lower() == "exit":
+                    print("Client disconnected.")
+                    break
 
-        client_socket.send(response.encode())
-        client_socket.close()
+                if query == "1":
+                    response = calculate_query_1()
+                elif query == "2":
+                    response = calculate_query_2()
+                elif query == "3":
+                    response = calculate_query_3()
+                else:
+                    response = "Invalid query. Use 1, 2, or 3."
+
+                client_socket.send(response.encode())
+        except Exception as e:
+            print(f"Error during communication: {e}")
+        finally:
+            client_socket.close()
+            print(f"Connection with {client_address} closed.")
 
 # Main
 if __name__ == "__main__":
